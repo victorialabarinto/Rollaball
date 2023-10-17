@@ -15,6 +15,8 @@ public class PlayerController : MonoBehaviour
     private float movementY;
 
     public GameObject winTextObject;
+
+    bool onGround;
   
   
     // Start is called before the first frame update
@@ -29,19 +31,59 @@ public class PlayerController : MonoBehaviour
        
     }
 
-    void OnMove(InputValue movementValue)
+     
+    void OnJump(InputValue val)
     {
-        Vector2 movementVector = movementValue.Get<Vector2>();
+      
+        if (onGround)
+        {
+            Debug.Log("Jumped");
+            rb.velocity = new Vector3(rb.velocity.x, 5, rb.velocity.z);
+        }
+       
+    }
 
-        movementX = movementVector.x;
-        movementY = movementVector.y;
+    void OnCollisionEnter(Collision collision)
+    {
+        int collisionCount = collision.contactCount;
+        for (int i = 0; i < collisionCount; i++)
+        {
+            Vector3 contactNormal = collision.contacts[i].normal;
+            bool isGround = Vector3.Dot(contactNormal, Vector3.up) > 0.9;
+            if (isGround)
+            {
+                onGround = true;
+                break;
+            }
+        }
+    }
+
+    void OnCollisionExit(Collision collision)
+
+    {
+        onGround = false;
+    }
+
+
+    void OnMove(InputValue val)
+    { 
+        Vector2 v = val.Get<Vector2>();
+        Debug.Log(v);
+
+        movementX = v.x;
+        movementY = v.y;
+
+        Vector3 newVelocity = new Vector3();
+        newVelocity.x = v.x;
+        newVelocity.z = v.y;
+        rb.velocity = newVelocity;
     }
 
     void SetCountText()
     {
         countText.text = "Count: " + count.ToString();
 
-        if (count >= 12)
+        if (count >= 20)
         {
             winTextObject.SetActive(true);
         }
@@ -67,6 +109,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+  
 
 }
 
